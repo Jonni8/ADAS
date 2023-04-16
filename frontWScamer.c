@@ -21,6 +21,7 @@ int main() {
         string[i] = c;
         putc(string[i], fdw);
         i++;
+        //TODO: prendere ogni valore di ogni riga e poi fare una Write nel file camera.log
     }
 
     string[i] = '\0';
