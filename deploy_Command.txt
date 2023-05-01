@@ -1,0 +1,7 @@
+## TEERBYWIRE
+
+cc -c printFor4sec.c 
+cc -c steerbyWire.c
+cc  printFor4sec.o steerbyWire.o -o steer
+
+----------------------------------------------------------
