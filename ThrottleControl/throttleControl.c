@@ -14,6 +14,7 @@ char* oraCorrente(){
 }
 
 static void aggiustaOra(char* el){
+    //commento
     int intervallo = (int)strcspn(el, "\n");
     printf("Intervallo : %d",intervallo);
     printf("STR LEN PRE: %d",(int)strlen(el));
