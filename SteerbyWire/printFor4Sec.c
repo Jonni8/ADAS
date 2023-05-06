@@ -3,7 +3,7 @@
 
 void printFor4sec(FILE *f, const char string[]) {
     time_t start, end;
-    double elapsed, prev_elapsed = 0.0;
+    int elapsed, prev_elapsed = 0;
     time(&start);  
     do {
         time(&end);
@@ -13,5 +13,5 @@ void printFor4sec(FILE *f, const char string[]) {
             fputs(string, f);
             prev_elapsed = elapsed;
         }
-    } while(elapsed < 4.0);
+    } while(elapsed < 4);
 }
