@@ -7,11 +7,8 @@ deve essere richiamato 30 volte in quanto dura 30 secondi.
 parlare con il gruppo.
 */
 
-void parkAssist();
+//restituisce un long che sono 8byte
 
-
-void parkAssist(){
-   
-}
+void parkAssist(char * risultatoEsadecimale);
 
 #endif

@@ -15,8 +15,6 @@ int main(){
             brakebywire(0,&velocitaInCorso);
         }
     }
-   
-
 
     return 0;
 }
