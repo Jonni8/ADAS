@@ -23,35 +23,26 @@ void leggiLog(int fd){
 }
 
 int main(){
-    int serverFd, clientFd; //File descriptor per socket con rispettiva lunghezza
-    char str[200];
+    int result; //File descriptor per socket ed il risultato della connessione
     struct sockaddr_un serverAddress; //da non assegnare
-    struct sockaddr_un clientAddress; //da non assegnare
     struct sockaddr* serverPtr; //puntatore indirizzo server
-    struct sockaddr* clientPtr; //puntatore indirizzo client
 
     serverPtr = (struct sockaddr*) &serverAddress; //cast a sockaddr* della dereferenza dell'indirizzo server
-    clientPtr = (struct sockaddr*) &clientAddress; //cast a sockaddr* della dereferenza dell'indirizzo client
+    unsigned int serverLen = sizeof(serverAddress);  //dimensione server
 
-    unsigned int serverLen = sizeof(serverAddress);  //dimensione indirizzo server
-    unsigned int clientLen = sizeof(clientAddress);  //dimensione indirizzo client
-
-    serverFd = socket(AF_UNIX, SOCK_STREAM, DEF_PROTOCOL);  //inizializzazione del socket
+    int clientFd = socket(AF_UNIX, SOCK_STREAM, DEF_PROTOCOL);  //inizializzazione del socket
     serverAddress.sun_family = AF_UNIX;                     //assegno al socket la famiglia
-    strcpy(serverAddress.sun_path, "../ECU");      //assegno al socket il nome "throttleControl"
-    unlink("../ECU");                              //elimino il file se esiste
-    bind(serverFd, serverPtr, serverLen);                   //creo il file e lo associo al server
-    listen(serverFd, 5);                                    //numero di connessioni possibile
-    while(1){                                               //loop eterno    
-        clientFd = accept(serverFd, clientPtr, &clientLen); //attendi connessione da parte del client
-        printf("In attesa di connessione ... \n");
-        if(fork() == 0){                                    //creo processo per inviare al client
-            printf("Leggo dati ... \n");
-            leggiLog(clientFd);
-            close(clientFd);
+    strcpy(serverAddress.sun_path, "../../ECU/socket_ecu");      //assegno al socket il nome
+
+    do{
+        printf("Connessione in corso ...\n");
+        result = connect(clientFd, serverPtr, serverLen);
+        if(result == -1){
+            printf("Errore ... Nuovo tentativo tra 5 sec\n");
+            sleep(1);
         }else{
-            close(clientFd);
+            leggiLog(clientFd);
         }
-    }
-    return 0;
+    } while(result == -1);
+    return result;
 }

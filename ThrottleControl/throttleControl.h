@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
+#include <signal.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#define DEF_PROTOCOL 0
 
 char* oraCorrente();
 void redigiLog(int fd);
