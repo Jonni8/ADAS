@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/unistd.h>
 #include <sys/un.h>
 #include <arpa/inet.h>
 
@@ -17,7 +18,7 @@ int readstring(int fd, char *bufferData) {
 int readData(int fd) {
     char bufferData[200];
     while(readstring( fd, bufferData)) {
-        printf("%s \n", bufferData);
+        printf("%s", bufferData);
     }
 }
 
@@ -27,7 +28,6 @@ int main(int argc, char const *argv[]) {
     int steer_pid;
     struct sockaddr_un server_adr, client_addr;
     struct sockaddr *serverPtr, *clientPtr; 
-    char client_message[2000];
 
     serverPtr = (struct sockaddr*) &server_adr;
     serverLenght = sizeof(server_adr);

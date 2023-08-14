@@ -15,27 +15,16 @@ void frontWindshieldCamera(int clientFd) {
     int *p_sendToServer;
     if(fdr == NULL) {
         printf("Can't open the file\n");
+        exit(1);
     }
 
-    fseek(fdr, 0, SEEK_END);
-    int lenght = ftell(fdr);
-    fseek(fdr, 0, SEEK_SET);
-    char *string = malloc(sizeof(char) * (lenght+1));
-    
     FILE *fdw = fopen("camera.data", "w");
-    char* c;
-    // while( (c = fgets(buffer, sizeof(buffer),fdr)) != NULL ) {
-    //     p_sendToServer = c;
-    //     write(clientFd, c , 20);
-    //     fputs(string, fdw);   
-    // }
-    c = fgets(buffer, sizeof(buffer),fdr);
-    // printf("%s", c);
-    p_sendToServer = c;
-    // printf("%s", p_sendToServer);
-    static char* line2 = "spam, and spam.";
-    write(clientFd, c , strlen(c)+1);
-
+    const char *c;
+    while( (c = fgets(buffer, sizeof(buffer),fdr)) != NULL ) {
+        p_sendToServer = c;
+        write(clientFd, c , strlen(c)+1);
+        fputs(c, fdw);   
+    }
     fclose(fdr);
     fclose(fdw);
 }
