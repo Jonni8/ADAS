@@ -52,20 +52,18 @@ int main(){
     int serverFd, clientFd, throttleFd;
 
     while(1){
-        while(1){
-            clientFd = createSocket(serverFd, "socket_input");
-            if(fork() == 0){
-                comando = "INCREMENTO 5";
-            }
-            
-            throttleFd = createSocket(serverFd, "socket_throttle");
-            if(fork() == 0){
-                write(throttleFd, comando, strlen(comando) + 1);
-            }
-            close(clientFd);
-            close(throttleFd);
-            sleep(1);
+        clientFd = createSocket(serverFd, "socket_input");
+        if(fork() == 0){
+            comando = "INCREMENTO 5";
         }
+            
+        throttleFd = createSocket(serverFd, "socket_throttle");
+        if(fork() == 0){
+            write(throttleFd, comando, strlen(comando) + 1);
+        }
+        close(clientFd);
+        close(throttleFd);
+        sleep(1);
     }
 
     /*while(clientFd = createSocket(serverFd, "socket_input")){
