@@ -1,11 +1,15 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/un.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/unistd.h>
-#include <sys/un.h>
-#include <arpa/inet.h>
+
+#define MAX_CLIENTS 5
+#define SOCKET_NAME "ADAS"
 
 int readstring(int fd, char *bufferData) {
     int n; 
@@ -15,51 +19,63 @@ int readstring(int fd, char *bufferData) {
     return( n > 0); 
 }
 
-int readData(int fd) {
-    char bufferData[200];
+int readData(int fd, char *bufferData, char *destbufferData, int lentgh) {
+    
     while(readstring( fd, bufferData)) {
-        printf("%s", bufferData);
+        for(int i = 0; i < lentgh; i++) {
+            *destbufferData++ = *bufferData++;
+        }
     }
+    printf("%s\n",bufferData);
 }
 
 int main(int argc, char const *argv[]) {
-
-    int server_fd, client_fd, serverLenght, clientLenght;
-    int steer_pid;
-    struct sockaddr_un server_adr, client_addr;
-    struct sockaddr *serverPtr, *clientPtr; 
-
-    serverPtr = (struct sockaddr*) &server_adr;
-    serverLenght = sizeof(server_adr);
-
-    clientPtr = (struct sockaddr*) &client_addr;
-    clientLenght = sizeof(clientLenght);
+    int server_fd, client_fd, new_socket;
+    int sender, receiver, rec; //
+    socklen_t address_size;
+    struct sockaddr_un serverAddress, clientAddress, new_addr;
+    struct sockaddr* serverPtr;
+    int client_sockets[MAX_CLIENTS];
+    char buffer[256];
     
-    server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if( server_fd == -1) {
+    serverPtr = (struct sockaddr*) &serverAddress; 
+    unsigned int serverLen = sizeof(serverAddress); 
+    unsigned int clientLen = sizeof(clientAddress); 
+
+    server_fd = socket(AF_UNIX, SOCK_STREAM, 0);  
+    if (server_fd == -1) {
         printf("Could not create socket server");
         exit(1);
     }
-    server_adr.sun_family = AF_UNIX;
-    strcpy(server_adr.sun_path, "ECU"); //set name del socket
-    unlink("ECU");
-    bind(server_fd, serverPtr, serverLenght);
 
-    listen(server_fd, 20);
+    serverAddress.sun_family = AF_UNIX;                 
+    strcpy(serverAddress.sun_path, SOCKET_NAME);     
+    unlink(SOCKET_NAME); 
+
+    bind(server_fd, serverPtr, serverLen);                 
+    if (listen(server_fd, MAX_CLIENTS) == 0) {
+        printf("Listening...\n");
+    } else {
+        printf("Error in Listening...\n");
+    }          
+
+    address_size = sizeof(new_addr);
 
     while(1) {
-        client_fd = accept(server_fd, clientPtr, &clientLenght);
-        printf("Connected ... \n");
-        steer_pid = fork();
-        if( steer_pid == 0 ) {
-            // sendData(client_fd);
-            
-            readData(client_fd);
-            close(client_fd);
-            exit(0);
-        } else {
-        close(client_fd);
+        for (int i = 0; i < MAX_CLIENTS; i++) {
+            new_socket = accept(server_fd, (struct sockaddr *)&new_addr, &address_size);
+            client_sockets[i] = new_socket;
+            printf("Client %d connected\n", i + 1);
         }
+
+        recv(client_sockets[sender], buffer, sizeof(buffer), 0);
+        printf("Received from Client %d: %s\n", sender + 1, buffer);
+
+        // Send the message to the receiver client
+        send(client_sockets[receiver], buffer, strlen(buffer), 0);
+
+        send(client_sockets[rec], buffer, strlen(buffer), 0);
     }
+
     return 0;
 }
