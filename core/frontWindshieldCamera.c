@@ -5,27 +5,44 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <arpa/inet.h>
-#include "frontWScamera.h"
 
+#include "frontWScamera.h"
+#define SOCKET_NAME "ADAS"
+
+void readLine(FILE *file, char *buffer) {
+    while(1) {
+        char *line = fgets(buffer, sizeof(*buffer), file);
+        if(line == NULL) {
+            //END of file
+            break;
+        }
+        sleep(1);
+    }
+}
 
 void frontWindshieldCamera(int clientFd) {
-    FILE *fdr = fopen("frontCamera.data", "r");
-    char buffer[100];
-    char sendToServer[100] = {0};
-    int *p_sendToServer;
-    if(fdr == NULL) {
+    FILE *fileDataFront = fopen("dataFront.data", "r");
+    FILE *fdw = fopen("camera.data", "w");
+    char buffer[2048];
+
+    if(fileDataFront == NULL) {
         printf("Can't open the file\n");
         exit(1);
     }
 
-    FILE *fdw = fopen("camera.data", "w");
-    const char *c;
-    while( (c = fgets(buffer, sizeof(buffer),fdr)) != NULL ) {
-        p_sendToServer = c;
-        write(clientFd, c , strlen(c)+1);
-        fputs(c, fdw);   
+    char *line;
+    while(line = fgets(buffer, sizeof(buffer), fileDataFront)) {
+        printf("Line %s\n", line);
+        if(line == NULL) {
+            //END of file
+            break;
+        }
+        write(clientFd, line, strlen(line));
+        fputs(line, fdw); 
+        sleep(1);
     }
-    fclose(fdr);
+
+    fclose(fileDataFront);
     fclose(fdw);
 }
 
@@ -35,19 +52,20 @@ int main() {
     struct sockaddr_un server_addr;
     struct sockaddr* serverPTRAddr = ( struct sockaddr* ) &server_addr;
     serverLenght = sizeof( server_addr);
-    
+
     clientFd = socket( AF_UNIX, SOCK_STREAM, 0 );
     server_addr.sun_family = AF_UNIX;
-    strcpy(server_addr.sun_path, "ECU");
+    strcpy(server_addr.sun_path, SOCKET_NAME);
 
-    do { 
-        connection = connect( clientFd, serverPTRAddr, serverLenght);
-        if( connection == -1 ) {
-            printf("Connection problem, retrying ...\n");
-            sleep(1);
-        }
-    } while( connection == -1);
+    while (connect( clientFd, serverPTRAddr, serverLenght) < 0) {
+        printf("Connection problem, retrying ...\n");
+        sleep(3);
+    }
+
+    printf("Connected to %s\n", SOCKET_NAME);
+
     frontWindshieldCamera(clientFd);
+
     close(clientFd);
     exit(0);
 }
