@@ -8,8 +8,9 @@
 #include <sys/socket.h>
 #include <sys/unistd.h>
 
-#define MAX_CLIENTS 5
+#define MAX_CLIENTS 2
 #define SOCKET_NAME "ADAS"
+#define BUFFER_SIZE 2048
 
 int readstring(int fd, char *bufferData) {
     int n; 
@@ -31,12 +32,11 @@ int readData(int fd, char *bufferData, char *destbufferData, int lentgh) {
 
 int main(int argc, char const *argv[]) {
     int server_fd, client_fd, new_socket;
-    int sender, receiver, rec; //
+    int front, steer, rec; //components
     socklen_t address_size;
     struct sockaddr_un serverAddress, clientAddress, new_addr;
     struct sockaddr* serverPtr;
     int client_sockets[MAX_CLIENTS];
-    char buffer[256];
     
     serverPtr = (struct sockaddr*) &serverAddress; 
     unsigned int serverLen = sizeof(serverAddress); 
@@ -58,8 +58,15 @@ int main(int argc, char const *argv[]) {
     } else {
         printf("Error in Listening...\n");
     }          
-
     address_size = sizeof(new_addr);
+    
+    char buffer[BUFFER_SIZE] = {0};
+    char line[2048];
+    int buffer_length = 0;
+    int bytes_received;
+
+    front = 0; 
+    steer = 1;
 
     while(1) {
         for (int i = 0; i < MAX_CLIENTS; i++) {
@@ -68,14 +75,43 @@ int main(int argc, char const *argv[]) {
             printf("Client %d connected\n", i + 1);
         }
 
-        recv(client_sockets[sender], buffer, sizeof(buffer), 0);
-        printf("Received from Client %d: %s\n", sender + 1, buffer);
+        printf("AFTER CONNECTION\n");
+        // write(client_sockets[front], buffer, sizeof(buffer));
+        // printf("Sent message to Front\n");
+
+        while((recv(client_sockets[front], buffer, sizeof(buffer), 0)) > 0) {
+            printf("Buffer: %s\n", buffer);
+            if(strcmp(buffer, "SINISTRA") || strcmp(buffer, "DESTRA") ) {  
+
+                write(client_sockets[steer], buffer, strlen(buffer));
+                printf("Sent message to Steer\n");
+                //write(client_sockets[front], buffer, sizeof(buffer));
+            }
+        }
+
+        printf("Sent to Steer");
+        
+        
+        // while(( bytes_received = recv(client_sockets[front], buffer, sizeof(buffer), 0)) > 0) {
+        //     if (buffer_length + bytes_received < BUFFER_SIZE) {
+        //         printf("Buffer: %s\n", buffer);
+        //         memcpy ( buffer + buffer_length, line, bytes_received);
+        //         buffer_length += bytes_received;
+        //     }
+        // }
+        // close(client_sockets[front]);
+        // for(int i = 0; i < buffer_length; i++) {
+        //     putchar(buffer[i]);
+        // }
 
         // Send the message to the receiver client
-        send(client_sockets[receiver], buffer, strlen(buffer), 0);
+        // if(strcmp(buffer,"DESTRA") || strcmp(buffer,"SINISTRA")) {
+        //     send(client_sockets[steer], buffer, strlen(buffer), 0);
+        // }
 
-        send(client_sockets[rec], buffer, strlen(buffer), 0);
+        //send(client_sockets[rec], buffer, strlen(buffer), 0);
     }
+    close(server_fd);
 
     return 0;
 }
