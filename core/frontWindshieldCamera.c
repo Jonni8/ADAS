@@ -9,17 +9,6 @@
 #include "frontWScamera.h"
 #define SOCKET_NAME "ADAS"
 
-void readLine(FILE *file, char *buffer) {
-    while(1) {
-        char *line = fgets(buffer, sizeof(*buffer), file);
-        if(line == NULL) {
-            //END of file
-            break;
-        }
-        sleep(1);
-    }
-}
-
 void frontWindshieldCamera(int clientFd) {
     FILE *fileDataFront = fopen("dataFront.data", "r");
     FILE *fdw = fopen("camera.data", "w");

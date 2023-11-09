@@ -75,7 +75,6 @@ int main(int argc, char const *argv[]) {
             printf("Client %d connected\n", i + 1);
         }
 
-        printf("AFTER CONNECTION\n");
         // write(client_sockets[front], buffer, sizeof(buffer));
         // printf("Sent message to Front\n");
 
@@ -89,9 +88,6 @@ int main(int argc, char const *argv[]) {
             }
         }
 
-        printf("Sent to Steer");
-        
-        
         // while(( bytes_received = recv(client_sockets[front], buffer, sizeof(buffer), 0)) > 0) {
         //     if (buffer_length + bytes_received < BUFFER_SIZE) {
         //         printf("Buffer: %s\n", buffer);
