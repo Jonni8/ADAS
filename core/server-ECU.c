@@ -65,6 +65,8 @@ int main(int argc, char const *argv[]) {
     int buffer_length = 0;
     int bytes_received;
 
+    int speed = 0;
+
     front = 0; 
     steer = 1;
 
@@ -75,37 +77,15 @@ int main(int argc, char const *argv[]) {
             printf("Client %d connected\n", i + 1);
         }
 
-        // write(client_sockets[front], buffer, sizeof(buffer));
-        // printf("Sent message to Front\n");
-
         while((recv(client_sockets[front], buffer, sizeof(buffer), 0)) > 0) {
             printf("Buffer: %s\n", buffer);
             if(strcmp(buffer, "SINISTRA") || strcmp(buffer, "DESTRA") ) {  
 
                 write(client_sockets[steer], buffer, strlen(buffer));
                 printf("Sent message to Steer\n");
-                //write(client_sockets[front], buffer, sizeof(buffer));
             }
         }
 
-        // while(( bytes_received = recv(client_sockets[front], buffer, sizeof(buffer), 0)) > 0) {
-        //     if (buffer_length + bytes_received < BUFFER_SIZE) {
-        //         printf("Buffer: %s\n", buffer);
-        //         memcpy ( buffer + buffer_length, line, bytes_received);
-        //         buffer_length += bytes_received;
-        //     }
-        // }
-        // close(client_sockets[front]);
-        // for(int i = 0; i < buffer_length; i++) {
-        //     putchar(buffer[i]);
-        // }
-
-        // Send the message to the receiver client
-        // if(strcmp(buffer,"DESTRA") || strcmp(buffer,"SINISTRA")) {
-        //     send(client_sockets[steer], buffer, strlen(buffer), 0);
-        // }
-
-        //send(client_sockets[rec], buffer, strlen(buffer), 0);
     }
     close(server_fd);
 
