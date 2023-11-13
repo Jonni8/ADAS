@@ -1,0 +1,1 @@
+int readMessage(int file_descriptor, char *message);

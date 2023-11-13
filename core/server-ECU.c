@@ -8,7 +8,9 @@
 #include <sys/socket.h>
 #include <sys/unistd.h>
 
-#define MAX_CLIENTS 2
+#include "utility.h"
+
+#define MAX_CLIENTS 1
 #define SOCKET_NAME "ADAS"
 #define BUFFER_SIZE 2048
 
@@ -30,9 +32,25 @@ int readData(int fd, char *bufferData, char *destbufferData, int lentgh) {
     printf("%s\n",bufferData);
 }
 
+int getInput(int fd) {
+    char command[100];
+    if(readMessage(fd, command) == 0) {
+        printf("C: %s\n", command);
+       if (strcmp(command, "ARRESTO")) {
+            return 1;
+        } else if (strcmp(command, "INIZIO")) {
+            return 2;
+        } else if (strcmp(command, "PARCHEGGIO")) {
+            return 3;
+        } else {
+            return -1;
+        }
+    }
+}
+
 int main(int argc, char const *argv[]) {
     int server_fd, client_fd, new_socket;
-    int front, steer, rec; //components
+    int hmi, front, steer, rec; //components
     socklen_t address_size;
     struct sockaddr_un serverAddress, clientAddress, new_addr;
     struct sockaddr* serverPtr;
@@ -60,31 +78,47 @@ int main(int argc, char const *argv[]) {
     }          
     address_size = sizeof(new_addr);
     
-    char buffer[BUFFER_SIZE] = {0};
+    char dataCamera[BUFFER_SIZE] = {0};
     char line[2048];
     int buffer_length = 0;
     int bytes_received;
+    int input = 0; 
 
     int speed = 0;
 
-    front = 0; 
-    steer = 1;
+    hmi = 0;
+    front = 1; 
+    steer = 2;
+    ssize_t bytesRead;
+        
+    for (int i = 0; i < MAX_CLIENTS; i++) {
+        new_socket = accept(server_fd, (struct sockaddr *)&new_addr, &address_size);
+        client_sockets[i] = new_socket;
+        printf("Client %d connected\n", i + 1);
+    }
 
     while(1) {
-        for (int i = 0; i < MAX_CLIENTS; i++) {
-            new_socket = accept(server_fd, (struct sockaddr *)&new_addr, &address_size);
-            client_sockets[i] = new_socket;
-            printf("Client %d connected\n", i + 1);
+
+        input = getInput(client_sockets[hmi]); 
+        if(input == -1) {
+            wait(NULL);
+        } else {
+            printf("Comando: %d\n", input);
         }
 
-        while((recv(client_sockets[front], buffer, sizeof(buffer), 0)) > 0) {
-            printf("Buffer: %s\n", buffer);
-            if(strcmp(buffer, "SINISTRA") || strcmp(buffer, "DESTRA") ) {  
+        // while((recv(client_sockets[front], dataCamera, sizeof(dataCamera), 0)) > 0) {
+        //     printf("Buffer: %s\n", dataCamera);
+        //     if(strcmp(dataCamera, "SINISTRA") || strcmp(dataCamera, "DESTRA") ) {  
 
-                write(client_sockets[steer], buffer, strlen(buffer));
-                printf("Sent message to Steer\n");
-            }
-        }
+        //         write(client_sockets[steer], dataCamera, strlen(dataCamera));
+        //         printf("Sent message to Steer\n");
+        //     }
+        // }
+
+        // while( (bytesRead = read ( client_sockets[front],dataCamera, sizeof(dataCamera))) > 0);
+        //     printf("Data: %s", dataCamera);
+
+        //wait processo
 
     }
     close(server_fd);
