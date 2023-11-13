@@ -16,13 +16,14 @@
 char sinistra[] = "STO GIRANDO A SINISTRA\n";
 char destra[] = "STO GIRANDO A DESTRA\n";
 
-void print4sec(FILE *f, const char string[]){
+void print4sec(FILE *file, char command[]){
     int t = 1;
     while( t <= TIME ) {
-        fputs(string, f);
+        fputs(command, file);
         t++;
         sleep(1);
     }
+    printf("End Write to File\n");
 }
 
 void steer_by_wire (int clientFd, FILE *file) {
@@ -30,9 +31,10 @@ void steer_by_wire (int clientFd, FILE *file) {
     const char sx[] = "SINISTRA";
     const char no_action[] = "NO ACTION";
     char command[100] = {0};
+    ssize_t bytesRead;
 
-    while ((recv(clientFd, command, sizeof(command), 0)) > 0) {
-        printf("Command: %s", command);
+    while ((bytesRead = read ( clientFd, command, sizeof(command))) > 0) {
+           fputs(command, file);
         int value = strcmp(command, dx);
         if (value == 0) {
             print4sec(file, destra);
@@ -42,7 +44,6 @@ void steer_by_wire (int clientFd, FILE *file) {
             memset(command,0,sizeof(command));
         }
     } 
-
 }
 
 int main(int argc, char *argv[]) {
@@ -50,11 +51,11 @@ int main(int argc, char *argv[]) {
     struct sockaddr_un server_addr;
     struct sockaddr* serverPTRAddr = ( struct sockaddr* ) &server_addr;
     serverLenght = sizeof( server_addr);
-    char *command = argv[1];
+    //char command[100] = {0};
 
-    FILE *fdw = fopen("steer.log", "w");
-    if (fdw == NULL) {
-        printf("Error to open file steer.log");
+    FILE *file = fopen("steer.log", "a");
+    if (file == NULL) {
+        printf("Error to open file steer.log\n");
         exit(1); 
     }
 
@@ -69,11 +70,15 @@ int main(int argc, char *argv[]) {
     
     printf("Connected to %s\n", SOCKET_NAME);
     
+            // if (read( clientFd, command, sizeof(command))>0) {
+            //     fputs(command, file);
+            // }
+
     while(1) {
-         steer_by_wire(clientFd, fdw);
+        steer_by_wire(clientFd, file);
     }
 
-    fclose(fdw);
+    fclose(file);
     close(clientFd);
     exit(0);
 }
