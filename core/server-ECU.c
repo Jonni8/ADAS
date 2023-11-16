@@ -97,8 +97,7 @@ int main(int argc, char const *argv[]) {
 
         while((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
             if(strcmp(dataCamera, "SINISTRA") == 0 || strcmp(dataCamera, "DESTRA") == 0 ) {  
-                write(client_sockets[steer], dataCamera, strlen(dataCamera));
-                fflush(client_sockets[steer]);
+                write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
                 printf("Sent message to Steer: %s\n", dataCamera);
             } else {
                 printf("Another command - %d\n", i);
