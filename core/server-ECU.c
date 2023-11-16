@@ -10,27 +10,9 @@
 
 #include "utility.h"
 
-#define MAX_CLIENTS 1
+#define MAX_CLIENTS 2
 #define SOCKET_NAME "ADAS"
 #define BUFFER_SIZE 2048
-
-int readstring(int fd, char *bufferData) {
-    int n; 
-    do {
-        n = read (fd, bufferData, 1);
-    } while ( n > 0 && *bufferData++ != '\0' );
-    return( n > 0); 
-}
-
-int readData(int fd, char *bufferData, char *destbufferData, int lentgh) {
-    
-    while(readstring( fd, bufferData)) {
-        for(int i = 0; i < lentgh; i++) {
-            *destbufferData++ = *bufferData++;
-        }
-    }
-    printf("%s\n",bufferData);
-}
 
 int getInput(int fd) {
     char command[100];
@@ -86,34 +68,43 @@ int main(int argc, char const *argv[]) {
 
     int speed = 0;
 
+    //Da Cambiare!!
     hmi = 0;
-    front = 1; 
-    steer = 2;
+    front = 0; 
+    steer = 1;
+
     ssize_t bytesRead;
-        
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    int i = 1;
+
+    while(1) {
+        for (int i = 0; i < MAX_CLIENTS; i++) {
         new_socket = accept(server_fd, (struct sockaddr *)&new_addr, &address_size);
         client_sockets[i] = new_socket;
         printf("Client %d connected\n", i + 1);
     }
-
-    while(1) {
-
-        input = getInput(client_sockets[hmi]); 
-        if(input == -1) {
-            wait(NULL);
-        } else {
-            printf("Comando: %d\n", input);
-        }
-
-        // while((recv(client_sockets[front], dataCamera, sizeof(dataCamera), 0)) > 0) {
-        //     printf("Buffer: %s\n", dataCamera);
-        //     if(strcmp(dataCamera, "SINISTRA") || strcmp(dataCamera, "DESTRA") ) {  
-
-        //         write(client_sockets[steer], dataCamera, strlen(dataCamera));
-        //         printf("Sent message to Steer\n");
-        //     }
+        //ricevo dati dall'hmi
+        // input = getInput(client_sockets[hmi]); 
+        // if(input == -1) {
+        //     wait(NULL);
+        // } else {
+        //     printf("Comando: %d\n", input);
         // }
+                   
+        // while(readLine(client_sockets[front], data) == 0) {
+        //     printf("Read: %s\n", data);
+        //     printf("After reset: %s\n", dataCamera);
+        // }
+
+        while((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
+            if(strcmp(dataCamera, "SINISTRA") == 0 || strcmp(dataCamera, "DESTRA") == 0 ) {  
+                write(client_sockets[steer], dataCamera, strlen(dataCamera));
+                fflush(client_sockets[steer]);
+                printf("Sent message to Steer: %s\n", dataCamera);
+            } else {
+                printf("Another command - %d\n", i);
+                i++;
+            }
+        }
 
         // while( (bytesRead = read ( client_sockets[front],dataCamera, sizeof(dataCamera))) > 0);
         //     printf("Data: %s", dataCamera);
