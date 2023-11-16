@@ -20,14 +20,16 @@ void frontWindshieldCamera(int clientFd) {
     }
 
     char *line;
+    int i = 1;
     while(line = fgets(buffer, sizeof(buffer), fileDataFront)) {
-        printf("Line %s\n", line);
         if(line == NULL) {
             //END of file
             break;
         }
-        write(clientFd, line, strlen(line));
+        write(clientFd, line, strlen(line)+1);
+        printf("Line %d : %s--\n", i ,line);
         fputs(line, fdw); 
+        i++;
         sleep(1);
     }
 
