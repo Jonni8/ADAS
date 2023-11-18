@@ -12,7 +12,7 @@
 void frontWindshieldCamera(int clientFd) {
     FILE *fileDataFront = fopen("dataFront.data", "r");
     FILE *fdw = fopen("camera.data", "w");
-    char buffer[2048];
+    char buffer[32];
 
     if(fileDataFront == NULL) {
         printf("Can't open the file\n");
@@ -21,14 +21,16 @@ void frontWindshieldCamera(int clientFd) {
 
     char *line;
     int i = 1;
-    while(line = fgets(buffer, sizeof(buffer), fileDataFront)) {
+    while(line = fgets(buffer, 32, fileDataFront)) {
         if(line == NULL) {
             //END of file
             break;
         }
-        write(clientFd, line, strlen(line)+1);
+        printf("Bytes : %ld\n",strlen(line));
+        write(clientFd, line, strlen(line));
         printf("Line %d : %s--\n", i ,line);
-        fputs(line, fdw); 
+        fprintf(fdw,"%s", line);
+        fflush(fdw);
         i++;
         sleep(1);
     }
