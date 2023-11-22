@@ -99,10 +99,10 @@ int main(int argc, char const *argv[]) {
         while((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
             printf("BYTES: %ld\n", bytesRead);
 
-            if(strcmp(dataCamera, "SINISTRA\n") == 0 || strcmp(dataCamera, "SINISTRA") == 0 ) {  
+            if(strcmp(dataCamera, "SINISTRA\n") == 0) {  
                 write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
                 printf("Sent message to Steer: %s\n", dataCamera);
-            } else if( strcmp(dataCamera, "DESTRA\n") == 0 || strcmp(dataCamera, "DESTRA") == 0) {
+            } else if( strcmp(dataCamera, "DESTRA\n") == 0) {
                 write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
                 printf("Sent message to Steer: %s\n", dataCamera);
                 memset(dataCamera, 0, sizeof(dataCamera));
