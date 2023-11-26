@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #define DEF_PROTOCOL 0
+#define SOCKET_NAME "ADAS"
 
 char* oraCorrente();
 void redigiLog(int fd);
