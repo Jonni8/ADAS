@@ -32,7 +32,7 @@ int getInput(int fd, char *command) {
 
 int main(int argc, char const *argv[]) {
     int server_fd, client_fd, new_socket;
-    int hmi, front, steer, rec; //components
+    int hmi, front, steer, rec, throttle, brake; //components
     socklen_t address_size;
     struct sockaddr_un serverAddress, clientAddress, new_addr;
     struct sockaddr* serverPtr;
@@ -69,9 +69,12 @@ int main(int argc, char const *argv[]) {
     int speed = 0;
 
     //Da Cambiare!!
-    hmi = 0;
-    front = 1; 
-    steer = 2;
+    hmi = 0; 
+    throttle = 1;
+    brake = 2;
+    steer = 3;
+    front = 9;
+
 
     ssize_t bytesRead;
     int i = 1;
@@ -107,11 +110,27 @@ int main(int argc, char const *argv[]) {
                 write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
                 printf("Sent message to Steer: %s\n", dataCamera);
                 memset(dataCamera, 0, sizeof(dataCamera));
+            } else if(strlen(dataCamera) <= 3){
+                int times = 0;
+                int current_speed = atoi(dataCamera);
+                if(current_speed > speed){
+                    printf("Sent message to Throttle: %s\n", dataCamera);
+                    char* c = "INCREMENTO 5";
+                    write(client_sockets[throttle],c, strlen(c)+1);
+                    speed += 5;
+                }else if(current_speed < speed){
+                    times = (speed - current_speed) / 5;
+                    if(times-- > 0){
+                        printf("Sent message to Brake: %s\n", dataCamera);
+                        char* c = "FRENO 5";
+                        write(client_sockets[brake],c, strlen(c)+1);
+                        speed -= 5;
+                    }
+                }
             } else {
-                rite(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
+                write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
                 i++;
             }
-
         }
 
         //wait processo

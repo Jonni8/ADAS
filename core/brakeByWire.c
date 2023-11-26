@@ -1,4 +1,4 @@
-#include "throttleControl.h"
+#include "brakeByWire.h"
 
 static void aggiustaOra(char* el);
 
@@ -28,7 +28,7 @@ int leggi(int fd, char * str){
 }
 
 int main(){
-    FILE* logFd = fopen("../ThrottleControl/throttle.log","arw+");
+    FILE* logFd = fopen("../BrakeByWire/brake.log","arw+");
     int result; //File descriptor per socket ed il risultato della connessione
     struct sockaddr_un serverAddress; //da non assegnare
     struct sockaddr* serverPtr; //puntatore indirizzo server
@@ -38,7 +38,7 @@ int main(){
 
     int clientFd = socket(AF_UNIX, SOCK_STREAM, DEF_PROTOCOL);  //inizializzazione del socket
     serverAddress.sun_family = AF_UNIX;                     //assegno al socket la famiglia
-    strcpy(serverAddress.sun_path, "../ECU/socket_throttle");      //assegno al socket il nome
+    strcpy(serverAddress.sun_path, SOCKET_NAME);      //assegno al socket il nome
 
     do{
         printf("Connessione in corso ...\n");
@@ -49,20 +49,20 @@ int main(){
         }
     }while(result == -1);
 
-    while(1){
-        char str[200];
-        leggi(clientFd,str);
-        printf("%s",str);
-        if(strcmp(str,"INCREMENTO 5") == 0){
-            printf("Evento registrato nel log\n");
+    char str[200];
+    while(1) {
+        if (read(clientFd, str, sizeof(str)) > 0) {
+            printf("%s ",str);
+            printf("Evento registrato nel log\n"); //per debugging
             char* t = oraCorrente();
-            char* z = " AUMENTO 5\n";
+            char* z = " FRENO 5\n";
             t = strcat(t,z);
             fseek(logFd,0,SEEK_END);
             fwrite(t,1,strlen(t), logFd);
-            //fclose(logFd);
         }
-        close(clientFd);
     }
+    
+    fclose(logFd);
+    close(clientFd);
     exit(0);
 }
