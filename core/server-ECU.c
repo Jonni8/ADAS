@@ -13,16 +13,16 @@
 #define MAX_CLIENTS 2
 #define SOCKET_NAME "ADAS"
 #define BUFFER_SIZE 2048
+#define ACTIVE_FRONT "1"
 
-int getInput(int fd) {
-    char command[100];
+int getInput(int fd, char *command) {
     if(readMessage(fd, command) == 0) {
         printf("C: %s\n", command);
-       if (strcmp(command, "ARRESTO")) {
+       if (strcmp(command, "ARRESTO") == 0) {
             return 1;
-        } else if (strcmp(command, "INIZIO")) {
+        } else if (strcmp(command, "INIZIO") == 0) {
             return 2;
-        } else if (strcmp(command, "PARCHEGGIO")) {
+        } else if (strcmp(command, "PARCHEGGIO") == 0) {
             return 3;
         } else {
             return -1;
@@ -61,7 +61,7 @@ int main(int argc, char const *argv[]) {
     address_size = sizeof(new_addr);
     
     char dataCamera[BUFFER_SIZE] = {0};
-    char line[2048];
+    char command[256];
     int buffer_length = 0;
     int bytes_received;
     int input = 0; 
@@ -69,9 +69,9 @@ int main(int argc, char const *argv[]) {
     int speed = 0;
 
     //Da Cambiare!!
-    // hmi = 0;
-    front = 0; 
-    steer = 1;
+    hmi = 0;
+    front = 1; 
+    steer = 2;
 
     ssize_t bytesRead;
     int i = 1;
@@ -84,41 +84,48 @@ int main(int argc, char const *argv[]) {
         }
 
         /***ricevo dati dall'hmi***/
-        // input = getInput(client_sockets[hmi]); 
-        // if(input == -1) {
-        //     wait(NULL);
-        // } else {
-        //     printf("Comando: %d\n", input);
-        // }
-                   
-        // while(readLine(client_sockets[front], data) == 0) {
-        //     printf("Read: %s\n", data);
-        //     printf("After reset: %s\n", dataCamera);
-        // }
-
-        while((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
-            printf("BYTES: %ld\n", bytesRead);
-
-            if(strcmp(dataCamera, "SINISTRA\n") == 0) {  
-                write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
-                printf("Sent message to Steer: %s\n", dataCamera);
-            } else if( strcmp(dataCamera, "DESTRA\n") == 0) {
-                write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
-                printf("Sent message to Steer: %s\n", dataCamera);
-                memset(dataCamera, 0, sizeof(dataCamera));
+        input = getInput(client_sockets[hmi], command);
+        char dataInput[8]; 
+        if(input == -1) {
+            wait(NULL);
+        } else {
+            printf("Comando: %d--\n", input); 
+            if (input == 2) {
+                sprintf(dataInput, "%d", input);
+                write(client_sockets[front], ACTIVE_FRONT, 1);
+                printf("Sent message to front: %s\n", command);
             } else {
-                printf("Another command - %d\n", i);
-                i++;
+                printf("Other command\n");
             }
 
         }
+                   
+        // while(readMessage(client_sockets[front], command) == 0) {
+        //     printf("Read: %s\n", command);
+        //     printf("After reset: %s\n", dataCamera);
+        // }
 
-        // while( (bytesRead = read ( client_sockets[front],dataCamera, sizeof(dataCamera))) > 0);
-        //     printf("Data: %s", dataCamera);
+        // while((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
+        //     printf("BYTES: %ld\n", bytesRead);
+
+        //     if(strcmp(dataCamera, "SINISTRA\n") == 0) {  
+        //         write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
+        //         printf("Sent message to Steer: %s\n", dataCamera);
+        //     } else if( strcmp(dataCamera, "DESTRA\n") == 0) {
+        //         write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
+        //         printf("Sent message to Steer: %s\n", dataCamera);
+        //         memset(dataCamera, 0, sizeof(dataCamera));
+        //     } else {
+        //         printf("Another command - %d\n", i);
+        //         i++;
+        //     }
+
+        // }
 
         //wait processo
 
     }
+
     close(server_fd);
 
     return 0;

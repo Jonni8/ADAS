@@ -57,7 +57,21 @@ int main() {
 
     printf("Connected to %s\n", SOCKET_NAME);
 
-    frontWindshieldCamera(clientFd);
+    char active[8] = "0";
+    ssize_t bytesRead;
+
+    bytesRead = read(clientFd, active, strlen(active)+1);
+    printf("Message: %s\n", active);
+
+    while (bytesRead < 0) {
+        printf("Non letto");
+        sleep(3);
+    } 
+    printf("Active: %s\n", active);
+
+    if(strcmp(active, "1") == 0) {
+        frontWindshieldCamera(clientFd);
+    }
 
     close(clientFd);
     exit(0);

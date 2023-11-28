@@ -34,13 +34,10 @@ int main(){
     while(1) {
         scanf("%s", comando);
         if (strcmp(comando, "INIZIO") == 0) {
-            printf("Inizio \n");
         }
         else if (strcmp(comando, "PARCHEGGIO") == 0) {
-            printf("Parcheggio \n");
         }
         else if (strcmp(comando, "ARRESTO") == 0) {
-            printf("Arresto \n");
         } else {
             printf("Command not valid");
         }
