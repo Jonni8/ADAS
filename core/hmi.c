@@ -33,16 +33,18 @@ int main(){
 
     while(1) {
         scanf("%s", comando);
-        if (strcmp(comando, "INIZIO") == 0) {
+        if (strcmp(comando, "INIZIO\0") == 0) {
+            write(clientFd, comando, strlen(comando) + 1);
         }
         else if (strcmp(comando, "PARCHEGGIO") == 0) {
+            printf("Comm: %d\n", strlen(comando) + 1);
+            write(clientFd, comando, strlen(comando) + 1);
         }
         else if (strcmp(comando, "ARRESTO") == 0) {
+            write(clientFd, comando, strlen(comando) + 1);
         } else {
-            printf("Command not valid");
+            printf("Command not valid\n");
         }
-        
-        write(clientFd, comando, strlen(comando) + 1);
     }
     return 0;
 }

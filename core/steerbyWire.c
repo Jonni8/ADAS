@@ -10,6 +10,8 @@
 #include <time.h>
 #include <arpa/inet.h>
 
+#include "utility.h"
+
 #define TIME 4
 #define SOCKET_NAME "ADAS"
 
@@ -20,8 +22,7 @@ char *no_action = "NO ACTION\n";
 void print4sec(FILE *file, char *command){
     int t = 1;
     while( t <= TIME ) {
-        fprintf(file,"%s", command);
-        fflush(file);
+        printInFile(file, command);
         printf("Stampato\n");
         t++;
         sleep(1);
@@ -36,7 +37,7 @@ void steer_by_wire (int clientFd, FILE *file) {
     ssize_t bytesRead;
 
     while(1) {
-        if (read(clientFd, command, sizeof(command)) > 0) {
+        if (bytesRead = read(clientFd, command, sizeof(command)) > 0) {
             printf("Read: %s\n", command);
             if (strcmp(command, dx) == 0) {
                 printf("dx\n");
@@ -44,10 +45,14 @@ void steer_by_wire (int clientFd, FILE *file) {
             } else if (strcmp(command, sx) == 0) {
                 printf("sx\n");
                 print4sec(file, sinistra);
+            } else {
+                printf("Nothing\n");
+                printInFile(file, no_action);
             }
-        } else {
-             print4sec(file, no_action);
         }
+        // } else if (bytesRead < 0) {
+
+        // }
     }
 }
 
