@@ -20,18 +20,13 @@ void frontWindshieldCamera(int clientFd) {
     }
 
     char *line;
-    int i = 1;
     while(line = fgets(buffer, 32, fileDataFront)) {
         if(line == NULL) {
             //END of file
             break;
         }
-        printf("Bytes : %ld\n",strlen(line));
         write(clientFd, line, strlen(line));
-        printf("Line %d : %s--\n", i ,line);
-        fprintf(fdw,"%s", line);
-        fflush(fdw);
-        i++;
+        printInFile(fdw, line);
         sleep(1);
     }
 
@@ -64,7 +59,6 @@ int main() {
     printf("Message: %s\n", active);
 
     while (bytesRead < 0) {
-        printf("Non letto");
         sleep(3);
     } 
     printf("Active: %s\n", active);

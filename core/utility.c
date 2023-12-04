@@ -4,9 +4,11 @@
 #include <string.h>
 
 int readMessage(int file_descriptor, char *message) {
-    while(read(file_descriptor, message, sizeof(message)+1) < 0) {
-        return -1;
-    }
+    do {
+        if(read(file_descriptor, message, 1) < 0) {
+            return -1;
+        }
+     } while(*message++ != '\0');
     return 0;
 }
 

@@ -96,21 +96,15 @@ int main(int argc, char const *argv[]) {
             if (input == 2) {
                 sprintf(dataInput, "%d", input);
                 write(client_sockets[front], ACTIVE_FRONT, 1);
-                printf("Sent message to front: %s\n", command);
             } else {
                 printf("Other command\n");
             }
         }
 
         while((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
-            if(strcmp(dataCamera, "SINISTRA\n") == 0) {  
+            if(strcmp(dataCamera, "SINISTRA\n") == 0 || strcmp(dataCamera, "DESTRA\n") == 0) {  
                 write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
-                printf("Sent message to Steer: %s\n", dataCamera);
-            } else if( strcmp(dataCamera, "DESTRA\n") == 0) {
-                write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
-                printf("Sent message to Steer: %s\n", dataCamera);
-                memset(dataCamera, 0, sizeof(dataCamera));
-            } else if(strlen(dataCamera) <= 3){
+            }  else if(strlen(dataCamera) <= 3){
                 int times = 0;
                 int current_speed = atoi(dataCamera);
                 if(current_speed > speed){
