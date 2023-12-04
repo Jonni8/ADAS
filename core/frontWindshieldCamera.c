@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 
 #include "frontWScamera.h"
+#include "utility.h"
 #define SOCKET_NAME "ADAS"
 
 void frontWindshieldCamera(int clientFd) {

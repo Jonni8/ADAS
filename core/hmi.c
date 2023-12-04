@@ -37,7 +37,6 @@ int main(){
             write(clientFd, comando, strlen(comando) + 1);
         }
         else if (strcmp(comando, "PARCHEGGIO") == 0) {
-            printf("Comm: %d\n", strlen(comando) + 1);
             write(clientFd, comando, strlen(comando) + 1);
         }
         else if (strcmp(comando, "ARRESTO") == 0) {
