@@ -32,7 +32,9 @@ int main(){
     char comando[64];
 
     while(1) {
+        printf("Inserisci un comando - INIZIO, PARCHEGGIO, ARRESTO: ");
         scanf("%s", comando);
+
         if (strcmp(comando, "INIZIO\0") == 0) {
             write(clientFd, comando, strlen(comando) + 1);
         }
