@@ -17,7 +17,6 @@
 
 int getInput(int fd, char *command) {
     if(readMessage(fd, command) == 0) {
-        printf("C: %s\n", command);
        if (strcmp(command, "ARRESTO") == 0) {
             return 1;
         } else if (strcmp(command, "INIZIO") == 0) {
@@ -64,16 +63,17 @@ int main(int argc, char const *argv[]) {
     char command[16];
     int buffer_length = 0;
     int bytes_received;
+    /* command receive from hmi */
     int input = 0; 
 
     int speed = 0;
 
     //Da Cambiare!!
     hmi = 0; 
-    throttle = 1;
-    brake = 2;
-    steer = 3;
-    front = 9;
+    //throttle = 1;
+    //brake = 1;
+    steer = 1;
+    front = 2;
 
 
     ssize_t bytesRead;
@@ -87,43 +87,48 @@ int main(int argc, char const *argv[]) {
 
     while (1) {
                 /***ricevo dati dall'hmi***/
-        input = getInput(client_sockets[hmi], command);
         char dataInput[8]; 
-        if(input == -1) {
-            wait(NULL);
-        } else {
-            printf("Comando: %d--\n", input); 
-            if (input == 2) {
-                sprintf(dataInput, "%d", input);
-                write(client_sockets[front], ACTIVE_FRONT, 1);
+        while(1) {
+            input = getInput(client_sockets[hmi], command);
+            if (input == -1) {
+                wait(NULL);
             } else {
-                printf("Other command\n");
-            }
-        }
-
-        while((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
-            if(strcmp(dataCamera, "SINISTRA\n") == 0 || strcmp(dataCamera, "DESTRA\n") == 0) {  
-                write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
-            }  else if(strlen(dataCamera) <= 3){
-                int times = 0;
-                int current_speed = atoi(dataCamera);
-                if(current_speed > speed){
-                    printf("Sent message to Throttle: %s\n", dataCamera);
-                    char* c = "INCREMENTO 5";
-                    write(client_sockets[throttle],c, strlen(c)+1);
-                    speed += 5;
-                }else if(current_speed < speed){
-                    times = (speed - current_speed) / 5;
-                    if(times-- > 0){
-                        printf("Sent message to Brake: %s\n", dataCamera);
-                        char* c = "FRENO 5";
-                        write(client_sockets[brake],c, strlen(c)+1);
-                        speed -= 5;
-                    }
+                printf("Comando: %d--\n", input);
+                if (input == 2) {
+                    sprintf(dataInput, "%d", input);
+                    write(client_sockets[front], ACTIVE_FRONT, 1);
+                    printf("Sent message to front: %s\n", command);
+                } else if (input == 3) {
+                    printf("PARK ASSIST\n");
+                } else {
+                    printf("ARRESTO\n");
                 }
-            } else {
-                write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
-                i++;
+
+                if((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
+                    if(strcmp(dataCamera, "SINISTRA\n") == 0 || strcmp(dataCamera, "DESTRA\n") == 0) {
+                        write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
+                }
+                else if(strlen(dataCamera) <= 3){
+                    int times = 0;
+                    int current_speed = atoi(dataCamera);
+                    if(current_speed > speed){
+                        printf("Sent message to Throttle: %s\n", dataCamera);
+                        char* c = "INCREMENTO 5";
+                        write(client_sockets[throttle],c, strlen(c)+1);
+                        speed += 5;
+                    }else if(current_speed < speed){
+                        times = (speed - current_speed) / 5;
+                        if(times-- > 0){
+                            printf("Sent message to Brake: %s\n", dataCamera);
+                            char* c = "FRENO 5";
+                            write(client_sockets[brake],c, strlen(c)+1);
+                            speed -= 5;
+                        }
+                    }
+                 else {
+                    write(client_sockets[steer], dataCamera, strlen(dataCamera)+1);
+                    i++;
+                }
             }
         }
 
@@ -134,4 +139,5 @@ int main(int argc, char const *argv[]) {
     close(server_fd);
 
     return 0;
+}
 }
