@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/un.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
+#define SOCKET_NAME "ADAS"
 #define DEVURANDOM "/dev/urandom"
 #define FILELOG "testo8byte.txt"
 
@@ -52,6 +57,20 @@ void parkAssist(FILE *urandom, FILE *fileLog , char *risultato_esadecimale){
 }
 
 int main(){
+
+    int clientFd, serverLenght, connection;
+    struct sockaddr_un server_addr;
+    struct sockaddr* serverPTRAddr = ( struct sockaddr* ) &server_addr;
+    serverLenght = sizeof( server_addr);
+    
+    clientFd = socket( AF_UNIX, SOCK_STREAM, 0 );
+    server_addr.sun_family = AF_UNIX;
+    strcpy(server_addr.sun_path, SOCKET_NAME);
+
+    while (connect(clientFd, serverPTRAddr, serverLenght) < 0) {
+        printf("Connection problem, retrying ...\n");
+        sleep(3);
+    }
     
     FILE *urandom = fopen(DEVURANDOM, "r");
     FILE *fileLog = fopen(FILELOG,"a");
@@ -67,6 +86,7 @@ int main(){
         printf("Errore all'apertura di %s", FILELOG);
         exit(1);
     }
+
     while(count < 30) {
         parkAssist(urandom, fileLog, risultato_esadecimale);
         bool esito = controlloLongParkAssist(risultato_esadecimale);
@@ -78,6 +98,7 @@ int main(){
 
     fclose(urandom);
     fclose(fileLog);
+    fclose(clientFd);
     return 0;
 }
 
