@@ -28,7 +28,7 @@ int leggi(int fd, char * str){
 }
 
 int main(){
-    FILE* logFd = fopen("../ThrottleControl/throttle.log","arw+");
+    FILE* logFd = fopen("log/throttle.log","arw+");
     int result; //File descriptor per socket ed il risultato della connessione
     struct sockaddr_un serverAddress; //da non assegnare
     struct sockaddr* serverPtr; //puntatore indirizzo server
@@ -50,15 +50,17 @@ int main(){
     }while(result == -1);
 
     char str[200];
+    
     while(1) {
         if (read(clientFd, str, sizeof(str)) > 0) {
             printf("%s ",str);
             printf("Evento registrato nel log\n"); //per debugging
-            char* t = oraCorrente();
-            char* z = " AUMENTO 5\n";
-            t = strcat(t,z);
+            char* time = oraCorrente();
+            char* message = " AUMENTO 5\n";
+            char *increment = strcat(time,message);
             fseek(logFd,0,SEEK_END);
-            fwrite(t,1,strlen(t), logFd);
+            //fwrite(t,1,strlen(t), logFd);
+            printInFile(logFd,increment);
         }
     }
     

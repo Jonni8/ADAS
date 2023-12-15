@@ -9,6 +9,9 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+
+#include "utility.h"
+
 #define DEF_PROTOCOL 0
 #define SOCKET_NAME "ADAS"
 

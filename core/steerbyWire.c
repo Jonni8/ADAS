@@ -36,7 +36,9 @@ void steer_by_wire (int clientFd, FILE *file) {
     ssize_t bytesRead;
 
     while(1) {
+        memset(command, 0, sizeof(command));
         if (bytesRead = read(clientFd, command, sizeof(command)) > 0) {
+            printf("Comando: %s", command);
             if (strcmp(command, dx) == 0) {
                 print4sec(file, destra);
             } else if (strcmp(command, sx) == 0) {
@@ -58,14 +60,13 @@ int main(int argc, char *argv[]) {
     clientFd = socket( AF_UNIX, SOCK_STREAM, 0 );
     server_addr.sun_family = AF_UNIX;
     strcpy(server_addr.sun_path, SOCKET_NAME);
-    //char command[100] = {0};
 
     while (connect( clientFd, serverPTRAddr, serverLenght) < 0) {
         printf("Connection problem, retrying ...\n");
         sleep(3);
     }
 
-    FILE *steer_log = fopen("steer.log","a");
+    FILE *steer_log = fopen("log/steer.log","a");
     if (steer_log == NULL) {
         printf("Error to open file steer.log\n");
         fclose(steer_log);

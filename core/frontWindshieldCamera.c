@@ -9,10 +9,11 @@
 #include "frontWScamera.h"
 #include "utility.h"
 #define SOCKET_NAME "ADAS"
+#define FRONT_CAMERA "dataFront.data"
 
 void frontWindshieldCamera(int clientFd) {
-    FILE *fileDataFront = fopen("dataFront.data", "r");
-    FILE *fdw = fopen("camera.data", "w");
+    FILE *fileDataFront = fopen(FRONT_CAMERA, "r");
+    FILE *fdw = fopen("log/camera.data", "w");
     char buffer[16];
 
     if(fileDataFront == NULL) {
@@ -21,6 +22,8 @@ void frontWindshieldCamera(int clientFd) {
     }
 
     char *line;
+    printf("Start reading from %s\n", FRONT_CAMERA);
+
     while(line = fgets(buffer, 16, fileDataFront)) {
         if(line == NULL) {
             //END of file
@@ -57,16 +60,15 @@ int main() {
     ssize_t bytesRead;
 
     bytesRead = read(clientFd, active, strlen(active)+1);
-    printf("Message: %s\n", active);
 
     while (bytesRead < 0) {
         sleep(3);
     } 
-    printf("Active: %s\n", active);
 
     if(strcmp(active, "1") == 0) {
         frontWindshieldCamera(clientFd);
     }
+    printf("End read from %s\n", FRONT_CAMERA);
 
     close(clientFd);
     exit(0);

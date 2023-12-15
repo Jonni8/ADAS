@@ -16,3 +16,12 @@ void printInFile(FILE *file, char *command) {
     fprintf(file, "%s", command);
     fflush(file);
 }
+
+int isListening(int socket) {
+    int isListening;
+    if (read(socket, &isListening, sizeof(isListening)) < 0) {
+        perror("Errore durante l'ascolto\n");
+        exit(EXIT_FAILURE);
+    }
+    return isListening;
+}
