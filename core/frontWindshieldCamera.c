@@ -15,6 +15,7 @@ void frontWindshieldCamera(int clientFd) {
     FILE *fileDataFront = fopen(FRONT_CAMERA, "r");
     FILE *fdw = fopen("log/camera.data", "w");
     char buffer[16];
+    char flagRead[8] = "0"; //flag to start reading from file
 
     if(fileDataFront == NULL) {
         printf("Can't open the file\n");
@@ -24,15 +25,33 @@ void frontWindshieldCamera(int clientFd) {
     char *line;
     printf("Start reading from %s\n", FRONT_CAMERA);
 
-    while(line = fgets(buffer, 16, fileDataFront)) {
-        if(line == NULL) {
-            //END of file
-            break;
+    while( read(clientFd, flagRead, strlen(flagRead)+1) > 0 ) {
+        if (strcmp(flagRead, "1") == 0) {
+            printf("reading\n");
+            while (line = fgets(buffer, 16, fileDataFront)) {
+                if (line == NULL) {
+                    // END of file
+                    break;
+                }
+                write(clientFd, line, strlen(line));
+                printInFile(fdw, line);
+                sleep(1);
+            }
+        } else {
+            printf("stop reading\n");
+            sleep(1);
         }
-        write(clientFd, line, strlen(line));
-        printInFile(fdw, line);
-        sleep(1);
     }
+
+    // while(line = fgets(buffer, 16, fileDataFront)) {
+    //     if(line == NULL) {
+    //         //END of file
+    //         break;
+    //     }
+    //     write(clientFd, line, strlen(line));
+    //     printInFile(fdw, line);
+    //     sleep(1);
+    // }
 
     fclose(fileDataFront);
     fclose(fdw);
@@ -56,18 +75,19 @@ int main() {
 
     printf("Connected to %s\n", SOCKET_NAME);
 
-    char active[8] = "0";
-    ssize_t bytesRead;
+    frontWindshieldCamera(clientFd);
 
-    bytesRead = read(clientFd, active, strlen(active)+1);
-
-    while (bytesRead < 0) {
-        sleep(3);
-    } 
-
-    if(strcmp(active, "1") == 0) {
-        frontWindshieldCamera(clientFd);
-    }
+    // while ( bytesRead = read(clientFd, active, strlen(active)+1) > 0 ) {
+    //    if( strcmp(active, "1") == 0 ) {
+    //     printf("reading\n");
+    //    } else {
+    //         sleep(1); 
+    //         printf("stop reading\n");
+    //    }
+    // }
+    // if(strcmp(active, "1") == 0) {
+    //     frontWindshieldCamera(clientFd);
+    // }
     printf("End read from %s\n", FRONT_CAMERA);
 
     close(clientFd);
