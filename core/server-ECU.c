@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/un.h>
+#include <ctype.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -27,6 +28,15 @@ int getInput(int fd, char *command) {
         } else {
             return -1;
         }
+    }
+}
+
+int isNumber(char *number) {
+    for(int i = 0; number[i] != '\0'; i++) {
+        if(!isdigit(number[i])) {
+            return 0;
+        }
+        return 1;
     }
 }
 
@@ -77,8 +87,6 @@ int main(int argc, char const *argv[]) {
     //parkassist = 4;
     front = 3;
 
-
-    ssize_t bytesRead;
     int i = 1;
 
     for (int i = 0; i < MAX_CLIENTS; i++) {
@@ -89,25 +97,27 @@ int main(int argc, char const *argv[]) {
 
     while (1) {
         /***ricevo dati dall'hmi***/
-        char dataInput[8];
+            char dataInput[8];
             input = getInput(client_sockets[hmi], command);
+            printf("Comando: %d--\n", input);
             if (input == -1) {
                 wait(NULL);
             } else {
-                printf("Comando: %d--\n", input);
                 if (input == 2) {
+                    
+                    while((read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
+                        printf("-- ESECUZIONE -- \n");
+                    }
                     sprintf(dataInput, "%d", input);
                     write(client_sockets[front], ACTIVE_FRONT, 1);
                     printf("Sent message to front: %s\n", command);
 
-                    while ((bytesRead = read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
-                        printf("LENGHT CAMERA: %ld\n",strlen(dataCamera) );
-                        
+                    while ((read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
                         if (strcmp(dataCamera, "SINISTRA\n") == 0 || strcmp(dataCamera, "DESTRA\n") == 0) {
                             write(client_sockets[steer], dataCamera, strlen(dataCamera) + 1);
                             printf("Sent Message to steer\n");
                             memset(dataCamera, 0, sizeof(dataCamera));
-                        } else if (strlen(dataCamera) <= 3) {
+                        } else if (isNumber(dataCamera) == 1) {
                             int times = 0;
                             int current_speed = atoi(dataCamera);
 
@@ -135,8 +145,7 @@ int main(int argc, char const *argv[]) {
                         }
                     }
                 } else if (input == 3) {
-                    printf("PARK ASSIST\n");
-                    write(client_sockets[front], DEACTIVE_FRONT, 1);
+                    printf("---PARK ASSIST---\n");
                 } else {
                     printf("ARRESTO\n");
                 }
