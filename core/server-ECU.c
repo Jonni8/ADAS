@@ -105,9 +105,6 @@ int main(int argc, char const *argv[]) {
             } else {
                 if (input == 2) {
                     
-                    while((read(client_sockets[front], dataCamera, sizeof(dataCamera))) > 0) {
-                        printf("-- ESECUZIONE -- \n");
-                    }
                     sprintf(dataInput, "%d", input);
                     write(client_sockets[front], ACTIVE_FRONT, 1);
                     printf("Sent message to front: %s\n", command);
