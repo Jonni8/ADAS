@@ -36,15 +36,17 @@ void steer_by_wire (int clientFd, FILE *file) {
     ssize_t bytesRead;
 
     while(1) {
-        memset(command, 0, sizeof(command));
         if (bytesRead = read(clientFd, command, sizeof(command)) > 0) {
-            printf("Comando: %s", command);
+            printf("Comando: %s-", command);
             if (strcmp(command, dx) == 0) {
                 print4sec(file, destra);
+                memset(command, 0, sizeof(command));
             } else if (strcmp(command, sx) == 0) {
                 print4sec(file, sinistra);
+                memset(command, 0, sizeof(command));
             } else {
                 printInFile(file, no_action);
+                memset(command, 0, sizeof(command));
             }
         }
     }

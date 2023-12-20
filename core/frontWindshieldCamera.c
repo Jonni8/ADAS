@@ -23,11 +23,10 @@ void frontWindshieldCamera(int clientFd) {
     }
 
     char *line;
-    printf("Start reading from %s\n", FRONT_CAMERA);
 
     while( read(clientFd, flagRead, strlen(flagRead)+1) > 0 ) {
         if (strcmp(flagRead, "1") == 0) {
-            printf("reading\n");
+            printf("Start reading from %s\n", FRONT_CAMERA);
             while (line = fgets(buffer, 16, fileDataFront)) {
                 if (line == NULL) {
                     // END of file

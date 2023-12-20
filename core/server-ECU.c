@@ -135,6 +135,8 @@ int main(int argc, char const *argv[]) {
                                 }
                             } 
                             printf("SPEED: %d\n", speed);
+                        } else if (strcmp(dataCamera, "PARCHEGGIO\n") == 0 ) {
+                            printf("PARKING\n");
                         } else {
                             write(client_sockets[steer], dataCamera, strlen(dataCamera) + 1);
                             printf("Sent Message to steer\n");
